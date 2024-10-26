@@ -1,6 +1,3 @@
-use std::str::Chars;
-
-use image::{DynamicImage, GenericImageView, Pixel};
 use opencv::{core::MatTraitConst, prelude::Mat, core::Vec3b};
 
 use crate::terminal::StringInfo;
@@ -22,6 +19,7 @@ pub const GRADIENT: &str = r#" ░▒▓█"#; // 5 chars
 pub const BLACKWHITE: &str = r#" █"#; // 2 chars
 pub const BW_DOTTED: &str = r#" ⣿"#; // 2 dotted block
 pub const BRAILLE: &str = r#" ··⣀⣀⣤⣤⣤⣀⡀⢀⠠⠔⠒⠑⠊⠉⠁"#; // 16 chars (braille-based)
+pub const NO: &str = r#"01234⣀5678"#;
 
 pub const PROGMRAM: &str = r#"
 __inline void write(__global uchar* output, __global uchar* input, uint output_start_index, uint input_start_index, uint len) {
@@ -38,8 +36,8 @@ __kernel void calculate(__global uchar* frame, __global uchar* chars, uint char_
         brightness = (frame[index * 3] + frame[index * 3 + 1] + frame[index * 3 + 2]) / 3;
     }
 
-    int char_index = brightness / step - 1;
-    write(out, chars, index + char_len, char_index + char_len, char_len);
+    int char_index = brightness / step;
+    write(out, chars, index * char_len, char_index * char_len, char_len);
 }
 "#;
 
@@ -79,7 +77,7 @@ impl AsciiConverter {
 
         StringInfo {
             string: string.as_bytes().to_vec(),
-            
+            char_len: 0,
             rgb,
         }
     }
